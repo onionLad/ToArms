@@ -1,2 +1,2 @@
 # To Arms!
-A 2D medieval strategy RPG with turn-based combat, inspired by Fire Emblem and Mount &amp; Blade.
+A 2D medieval strategy RPG set in the fantasy world of Elduin, inspired by Fire Emblem and Mount & Blade.
