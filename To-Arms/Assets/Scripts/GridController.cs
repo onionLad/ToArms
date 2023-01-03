@@ -24,7 +24,7 @@ public class GridController : MonoBehaviour
     /*
      * This function returns the position of the cursor on the grid.
      */
-    public Vector3Int GetMousePosition() {
+    public Vector3Int GetGridPos() {
         Vector3 mouseWorldPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         return grid.WorldToCell(mouseWorldPos);
     }
@@ -39,10 +39,10 @@ public class GridController : MonoBehaviour
     public string get_TileAtCursor(string mapName)
     {
         // Find a way to automate offset.
-        int offsetx = 5;
-        int offsety = 5;
+        int offsetx = 0;
+        int offsety = 0;
 
-        Vector3Int coord = new Vector3Int(GetMousePosition().x - offsetx, GetMousePosition().y - offsety, 0);
+        Vector3Int coord = new Vector3Int(GetGridPos().x - offsetx, GetGridPos().y - offsety, 0);
 
         if (mapName == "battleMap") {
             if (battleMap.GetTile(coord) == null) {
@@ -80,8 +80,8 @@ public class GridController : MonoBehaviour
     {
         Debug.Log("Instantiating");
         
-        // Accounting for offset.
-        start = new Vector3Int(start.x - 5, start.y - 5, 0);
+        // // Accounting for offset.
+        // start = new Vector3Int(start.x - 5, start.y - 5, 0);
         
         // Getting a list of legal moves.
         List<Vector3Int> coords = get_legalMoves(start, depth);
@@ -202,7 +202,7 @@ public class GridController : MonoBehaviour
      */
     public bool hasOverlayTile(Vector3Int pos)
     {
-        pos = new Vector3Int(pos.x - 5, pos.y - 5, 0);
+        pos = new Vector3Int(pos.x, pos.y, 0);
         return overlayGrid.GetTile(pos) != null;
     }
 }

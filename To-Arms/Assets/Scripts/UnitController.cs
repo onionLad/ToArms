@@ -11,7 +11,7 @@ public class UnitController : MonoBehaviour
     // Objects.
     private Grid theGrid;
     private GridController gridControl;
-    private Tilemap battleMap;
+    // private Tilemap battleMap;
 
     // Bools.
     private bool myTurn;
@@ -23,7 +23,7 @@ public class UnitController : MonoBehaviour
     {
         theGrid = GameObject.Find("Grid").GetComponent<Grid>();
         gridControl = GameObject.Find("Grid").GetComponent<GridController>();
-        battleMap = GameObject.Find("Tilemap_Base").GetComponent<Tilemap>();
+        // battleMap = GameObject.Find("Tilemap_Base").GetComponent<Tilemap>();
 
         myTurn = false;
     }
@@ -36,6 +36,8 @@ public class UnitController : MonoBehaviour
         {
             if (myTurn && isLegalMove()) {
                 Reloc( GetPosition(), get_currGridPos() );
+            } else if (myTurn) {
+                toggleTurn();
             }
         }
     }
@@ -59,8 +61,8 @@ public class UnitController : MonoBehaviour
     Vector3 get_currGridPos()
     {
         // Find a way to automate offset.
-        int offsetx = 4;
-        int offsety = 4;
+        int offsetx = -1;
+        int offsety = -1;
 
         Vector3 gridpos = theGrid.WorldToCell(get_currPos());
         float x_coord = gridpos.x + offsetx;
@@ -111,6 +113,6 @@ public class UnitController : MonoBehaviour
 
     Vector3Int GetPosition()
     {
-        return gridControl.GetMousePosition();
+        return gridControl.GetGridPos();
     }
 }

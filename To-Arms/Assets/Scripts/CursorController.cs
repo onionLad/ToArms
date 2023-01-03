@@ -21,7 +21,7 @@ public class CursorController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        Vector3Int mousePos = gridControl.GetMousePosition();
+        Vector3Int mousePos = gridControl.GetGridPos();
 
         /* If the mouse is moving and we aren't hovering over a void tile,
            we get the cursor's position on the grid corrected for offset
@@ -29,20 +29,20 @@ public class CursorController : MonoBehaviour
            position. */
         if (!mousePos.Equals(previousMousePos) && gridControl.get_TileAtCursor("battleMap") != "null") 
         {
-            Vector3 truePos = calc_Pos(mousePos);
+            Vector3 truePos = calc_cursorPos(mousePos);
             gameObject.transform.position = truePos;
         }
     }
 
     /*
      * For some reason, our grid is offset from the calculated positions, so
-     * we need this function to optain the true position of the cursor.
+     * we need this function to obtain the true position of the CURSOR.
      */
-    Vector3 calc_Pos(Vector3Int gridPos)
+    Vector3 calc_cursorPos(Vector3Int gridPos)
     {
         // Find a way to automate offset.
-        int offsetx = 4;
-        int offsety = 4;
+        int offsetx = -1;
+        int offsety = -1;
 
         // Translating grid coords to actual coords.
         int x_coord = gridPos.x - offsetx;
