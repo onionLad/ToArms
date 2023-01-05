@@ -1,66 +1,95 @@
+/*
+ * UnitController.cs
+ *
+ * Purpose: Handles operations that deal with a single unit. These include
+ *          movement operations and combat functions.
+ */
+
+/* ======================================================================== *\
+ *  IMPORTS                                                                 *
+\* ======================================================================== */
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 using UnityEngine.UI;
 
+/* ======================================================================== *\
+ * CLASS: UnitController                                                    *
+ * Description: An instance of this class is needed for each unit in each   *
+ *              battle scene. It gets attached to a unit GameObject.        *
+\* ======================================================================== */
 public class UnitController : MonoBehaviour
 {
-    //-- VARIABLES --//
+    /* ==================================================================== *\
+     *  MEMBER VARIABLES                                                    *
+    \* ==================================================================== */
 
     // Objects.
     private Grid theGrid;
     private GridController gridControl;
-    // private Tilemap battleMap;
 
     // Bools.
     private bool myTurn;
-    
-    //-- FUNCTIONS --//
 
-    // Start is called before the first frame update
+    /* ==================================================================== *\
+     *                                                                      *
+     *  CLASS METHODS                                                       *
+     *                                                                      *
+    \* ==================================================================== */
+
+    /* On start, initialize member variables. */
     void Start()
     {
         theGrid = GameObject.Find("Grid").GetComponent<Grid>();
         gridControl = GameObject.Find("Grid").GetComponent<GridController>();
-        // battleMap = GameObject.Find("Tilemap_Base").GetComponent<Tilemap>();
 
         myTurn = false;
     }
 
-    // Update is called once per frame
+    /* Every frame, check for user inputs. */
     void Update()
     {
-        // Click -> Display Move Range.
-        if (Input.GetButtonDown("Fire1"))
-        {
+        /* If l-click detected... */
+        if (Input.GetButtonDown("Fire1")) {
+
+            /*
+             * If it's the unit's turn and the selected tile is a legal move,
+             * relocate the unit.
+             */
             if (myTurn && isLegalMove()) {
                 Reloc( GetPosition(), get_currGridPos() );
-            } else if (myTurn) {
+            } 
+
+            /* Temporary code.
+             * If the move isn't legal, end the unit's turn.
+             */
+            else if (myTurn) {
                 toggleTurn();
             }
         }
     }
 
-    // Click -> Select.
+    /* Unit clicked --> Toggle turn status. */
     void OnMouseDown()
     {
         toggleTurn();
     }
 
-    //-- HELPERS --//
+    /* ==================================================================== *\
+     *  Helper Functions                                                    *
+    \* ==================================================================== */
 
-    // Gets character's position.
+    /* Obtains character's current transform position. */
     Vector3 get_currPos()
     {
         return gameObject.transform.position;
     }
 
-    /* Gets character's position in relation to theGrid. The function's
-       primary job is to account for grid offset. */
+    /* Gets unit's position in relation to theGrid. The function's primary job
+       is to account for grid offset. */
     Vector3 get_currGridPos()
     {
-        // Find a way to automate offset.
         int offsetx = -1;
         int offsety = -1;
 
@@ -73,46 +102,48 @@ public class UnitController : MonoBehaviour
         return offsetCoord;
     }
 
-    // Moves unit to clicked tile.
+    /* Switches myTurn on/off. */
+    void toggleTurn()
+    {
+        myTurn = !myTurn;
+
+        if (myTurn) {
+            gridControl.instantiateMoveRange(gridControl.CursorGridCoords(), 2);
+        } else {
+            gridControl.unInstantiateMoveRange();
+        }
+    }
+
+    /* Function that checks if a given move is legal or not. Basically, does it
+       fall within the highlighted zone? */
+    bool isLegalMove()
+    {
+        return gridControl.hasOverlayTile(GetPosition());
+    }
+
+    /* Obtains grid coordinates of curent cursor position. */
+    Vector3Int GetPosition()
+    {
+        return gridControl.CursorGridCoords();
+    }
+
+    /* Moves unit to clicked tile. */
     void Reloc(Vector3Int newPos, Vector3 currGridPos)
     {
+        /* Determine how far in each direction the unit must be moved. */
         float x_dif = newPos.x - currGridPos.x;
         float y_dif = newPos.y - currGridPos.y;
 
-        if (x_dif != 0 || y_dif != 0)
-        {
+        /* 
+         * Convert grid coordinate difference into transform coordinate
+         * difference.
+         */
+        if (x_dif != 0 || y_dif != 0) {
             Vector3 offset = new Vector3( (float)(x_dif * 0.5 - y_dif * 0.5), (float)(x_dif * 0.25 + y_dif * 0.25), 0 );
 
             gameObject.transform.position += offset;
 
             toggleTurn();
         }
-    }
-
-    // Switches myTurn on/off.
-    void toggleTurn()
-    {
-        myTurn = !myTurn;
-
-        // Switch other units' myTurn to false.
-
-        if (myTurn)
-        {
-            gridControl.instantiateMoveRange(GetPosition(), 2);
-        } else {
-            gridControl.unInstantiateMoveRange();
-        }
-    }
-
-    // Function that checks if a given move is legal or not. Basically, does it
-    // fall within the highlighted zone?
-    bool isLegalMove()
-    {
-        return gridControl.hasOverlayTile(GetPosition());
-    }
-
-    Vector3Int GetPosition()
-    {
-        return gridControl.GetGridPos();
     }
 }
