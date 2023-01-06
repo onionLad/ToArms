@@ -25,11 +25,11 @@ public class UnitController : MonoBehaviour
      *  MEMBER VARIABLES                                                    *
     \* ==================================================================== */
 
-    // Objects.
+    /* Objects. */
     private Grid theGrid;
     private GridController gridControl;
 
-    // Bools.
+    /* Bools. */
     private bool myTurn;
 
     /* ==================================================================== *\
@@ -38,19 +38,26 @@ public class UnitController : MonoBehaviour
      *                                                                      *
     \* ==================================================================== */
 
-    /* On start, initialize member variables. */
+    /* 
+     * On start, initialize member variables, center the unit to the nearest
+     * tile, and add its position to the GridController's list of occupied
+     * tiles.
+     */
     void Start()
     {
         theGrid = GameObject.Find("Grid").GetComponent<Grid>();
         gridControl = GameObject.Find("Grid").GetComponent<GridController>();
-
         myTurn = false;
+
+        gameObject.transform.position = getCellPos();
+
+        gridControl.addOccupiedTile(get_currGridPos());
     }
 
     /* Every frame, check for user inputs. */
     void Update()
     {
-        /* If l-click detected... */
+        /* If left-click detected... */
         if (Input.GetButtonDown("Fire1")) {
 
             /*
@@ -58,13 +65,13 @@ public class UnitController : MonoBehaviour
              * relocate the unit.
              */
             if (myTurn && isLegalMove()) {
-                Reloc( GetPosition(), get_currGridPos() );
+                Reloc( GetCursorPosition(), get_currGridPos() );
             } 
 
             /* Temporary code.
              * If the move isn't legal, end the unit's turn.
              */
-            else if (myTurn) {
+            else if (myTurn && (GetCursorPosition() != get_currGridPos())) {
                 toggleTurn();
             }
         }
@@ -80,6 +87,16 @@ public class UnitController : MonoBehaviour
      *  Helper Functions                                                    *
     \* ==================================================================== */
 
+    /*
+     * Returns the world position of the cell that the unit should center
+     * itself on.
+     */
+    Vector3 getCellPos()
+    {
+        Vector3 coords = theGrid.GetCellCenterWorld(theGrid.WorldToCell(transform.position));
+        return new Vector3(coords.x, (float)(coords.y - 0.25), coords.z);
+    }
+
     /* Obtains character's current transform position. */
     Vector3 get_currPos()
     {
@@ -88,16 +105,16 @@ public class UnitController : MonoBehaviour
 
     /* Gets unit's position in relation to theGrid. The function's primary job
        is to account for grid offset. */
-    Vector3 get_currGridPos()
+    Vector3Int get_currGridPos()
     {
         int offsetx = -1;
         int offsety = -1;
 
-        Vector3 gridpos = theGrid.WorldToCell(get_currPos());
-        float x_coord = gridpos.x + offsetx;
-        float y_coord = gridpos.y + offsety;
+        Vector3Int gridpos = theGrid.WorldToCell(get_currPos());
+        int x_coord = gridpos.x + offsetx;
+        int y_coord = gridpos.y + offsety;
 
-        Vector3 offsetCoord = new Vector3(x_coord, y_coord, gridpos.z);
+        Vector3Int offsetCoord = new Vector3Int(x_coord, y_coord, gridpos.z);
 
         return offsetCoord;
     }
@@ -110,6 +127,7 @@ public class UnitController : MonoBehaviour
         if (myTurn) {
             gridControl.instantiateMoveRange(gridControl.CursorGridCoords(), 2);
         } else {
+            Debug.Log("UNINSTANTIATE");
             gridControl.unInstantiateMoveRange();
         }
     }
@@ -118,29 +136,34 @@ public class UnitController : MonoBehaviour
        fall within the highlighted zone? */
     bool isLegalMove()
     {
-        return gridControl.hasOverlayTile(GetPosition());
+        return gridControl.hasOverlayTile(GetCursorPosition());
     }
 
     /* Obtains grid coordinates of curent cursor position. */
-    Vector3Int GetPosition()
+    Vector3Int GetCursorPosition()
     {
         return gridControl.CursorGridCoords();
     }
 
     /* Moves unit to clicked tile. */
-    void Reloc(Vector3Int newPos, Vector3 currGridPos)
+    void Reloc(Vector3Int newPos, Vector3Int currGridPos)
     {
         /* Determine how far in each direction the unit must be moved. */
-        float x_dif = newPos.x - currGridPos.x;
-        float y_dif = newPos.y - currGridPos.y;
+        int x_dif = newPos.x - currGridPos.x;
+        int y_dif = newPos.y - currGridPos.y;
 
-        /* 
-         * Convert grid coordinate difference into transform coordinate
-         * difference.
+        /*
+         * If the difference isn't 0 in any direction, perform the relocation.
+         *
+         * Update occupied tiles in GridController.
+         * Transform coordinate difference with offset and relocate.
+         * Finally, toggle turn to instantiate move range.
          */
         if (x_dif != 0 || y_dif != 0) {
-            Vector3 offset = new Vector3( (float)(x_dif * 0.5 - y_dif * 0.5), (float)(x_dif * 0.25 + y_dif * 0.25), 0 );
+            gridControl.remOccupiedTile(currGridPos);
+            gridControl.addOccupiedTile(newPos);
 
+            Vector3 offset = new Vector3( (float)(x_dif * 0.5 - y_dif * 0.5), (float)(x_dif * 0.25 + y_dif * 0.25), 0 );
             gameObject.transform.position += offset;
 
             toggleTurn();

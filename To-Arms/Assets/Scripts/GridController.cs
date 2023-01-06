@@ -38,6 +38,9 @@ public class GridController : MonoBehaviour
      */
     private List<Vector3Int> markedTiles = new List<Vector3Int>();
 
+    /* List of occupied coordinates. */
+    private List<Vector3Int> occupiedTiles = new List<Vector3Int>();
+
     /* 
      * These are for keeping track of the grid object and the battlemap 
      * (terrain).
@@ -66,7 +69,8 @@ public class GridController : MonoBehaviour
     public Vector3Int CursorGridCoords()
     {
         Vector3 mouseWorldPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        return grid.WorldToCell(mouseWorldPos);
+        Vector3Int cellCoords = grid.WorldToCell(mouseWorldPos);
+        return new Vector3Int(cellCoords.x, cellCoords.y, 0);
     }
 
     /*
@@ -77,7 +81,8 @@ public class GridController : MonoBehaviour
      */
     public string get_TileAtCursor()
     {
-        Vector3Int coord = new Vector3Int(CursorGridCoords().x, CursorGridCoords().y, 0);
+        // Vector3Int coord = new Vector3Int(CursorGridCoords().x, CursorGridCoords().y, 0);
+        Vector3Int coord = CursorGridCoords();
 
         if (battleMap.GetTile(coord) == null) {
             return "null";
@@ -93,8 +98,30 @@ public class GridController : MonoBehaviour
      */
     public bool hasOverlayTile(Vector3Int pos)
     {
-        pos = new Vector3Int(pos.x, pos.y, 0);
+        // pos = new Vector3Int(pos.x, pos.y, 0);
         return overlayGrid.GetTile(pos) != null;
+    }
+
+    /* ==================================================================== *\
+     *  Public Setter Functions                                             *
+    \* ==================================================================== */
+
+    /* Adds a coordinate to the occupiedTiles list. */
+    public void addOccupiedTile(Vector3Int coord)
+    {
+        coord = new Vector3Int(coord.x, coord.y, 0);
+        if (!occupiedTiles.Contains(coord)) {
+            occupiedTiles.Add(coord);
+        }
+    }
+
+    /* Removes a coordinate from the occupiedTiles list. */
+    public void remOccupiedTile(Vector3Int coord)
+    {
+        coord = new Vector3Int(coord.x, coord.y, 0);
+        if (occupiedTiles.Contains(coord)) {
+            occupiedTiles.Remove(coord);
+        }
     }
 
     /* ==================================================================== *\
@@ -113,10 +140,13 @@ public class GridController : MonoBehaviour
      */
     public void instantiateMoveRange(Vector3Int start, int depth)
     {
-        Debug.Log("Instantiating");
+        Debug.Log("Instantiating from: " + start);
 
         /* Obtaining a list of legal moves. */
         List<Vector3Int> coords = get_legalMoves(start, depth);
+        // foreach (Vector3Int c in coords) {
+        //     Debug.Log(c);
+        // }
 
         /* Iterating over that list, highlighting each of the coordinates. */
         int coords_size = coords.Count;
@@ -135,6 +165,9 @@ public class GridController : MonoBehaviour
     List<Vector3Int> get_legalMoves(Vector3Int start, int depth)
     {
         List<Vector3Int> marked = new List<Vector3Int>();
+        // start = new Vector3Int(start.x, start.y, 0);
+        // marked.Add( start );
+        marked.Add( new Vector3Int(start.x, start.y, 0) );
         List<Vector3Int> moves = get_legalMoves(start, depth, marked).Distinct().ToList();
         moves.Remove( start );
         return moves;
@@ -192,9 +225,10 @@ public class GridController : MonoBehaviour
         for (int y = -1; y <= 1; y++) {
             for (int x = -1; x <= 1; x++) {
                 Vector3Int coord = new Vector3Int(start.x + x, start.y + y, 0);
+                // Vector3Int coord = new Vector3Int(start.x + x, start.y + y, start.z);
 
-                if (!isIllegal(coord, marked))
-                {
+                if (!isIllegal(coord, marked)) {
+                    // Debug.Log(coord);
                     adjList.Add( coord );
                 }
             }
@@ -209,10 +243,11 @@ public class GridController : MonoBehaviour
      */
     bool isIllegal(Vector3Int coord, List<Vector3Int> marked)
     {
-        bool is_marked = marked.Contains(coord);
+        bool is_occupied = occupiedTiles.Contains(coord);
         bool is_void = battleMap.GetTile(coord) == null;
+        bool is_marked = marked.Contains(coord);
 
-        return is_marked || is_void;
+        return  is_occupied || is_void || is_marked;
     }
 
     /*
