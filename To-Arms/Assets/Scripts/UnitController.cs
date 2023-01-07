@@ -29,6 +29,12 @@ public class UnitController : MonoBehaviour
     private Grid theGrid;
     private GridController gridControl;
 
+    /* 
+     * List of coordinates cooresponding to move range tiles associated with
+     * this unit.
+     */
+    private List<Vector3Int> markedTiles = new List<Vector3Int>();
+
     /* Bools. */
     private bool myTurn;
 
@@ -125,10 +131,11 @@ public class UnitController : MonoBehaviour
         myTurn = !myTurn;
 
         if (myTurn) {
-            gridControl.instantiateMoveRange(gridControl.CursorGridCoords(), 2);
+            markedTiles.AddRange( gridControl.instantiateMoveRange(gridControl.CursorGridCoords(), 2) );
         } else {
             Debug.Log("UNINSTANTIATE");
-            gridControl.unInstantiateMoveRange();
+            gridControl.unInstantiateMoveRange(markedTiles);
+            markedTiles.Clear();
         }
     }
 

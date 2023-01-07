@@ -138,7 +138,7 @@ public class GridController : MonoBehaviour
      * Input:  A position on the terrain grid and a move range.
      * Output: Highlights legal moves from the starting point.
      */
-    public void instantiateMoveRange(Vector3Int start, int depth)
+    public List<Vector3Int> instantiateMoveRange(Vector3Int start, int depth)
     {
         Debug.Log("Instantiating from: " + start);
 
@@ -156,6 +156,8 @@ public class GridController : MonoBehaviour
 
         /* Storing highlighted coords so they can be uninstantiated later. */
         markedTiles.AddRange(coords);
+
+        return coords;
     }
 
     /*
@@ -168,7 +170,8 @@ public class GridController : MonoBehaviour
         // start = new Vector3Int(start.x, start.y, 0);
         // marked.Add( start );
         marked.Add( new Vector3Int(start.x, start.y, 0) );
-        List<Vector3Int> moves = get_legalMoves(start, depth, marked).Distinct().ToList();
+        // List<Vector3Int> moves = get_legalMoves(start, depth, marked).Distinct().ToList();
+        List<Vector3Int> moves = get_legalMoves(start, depth, marked).ToList();
         moves.Remove( start );
         return moves;
     }
@@ -252,13 +255,17 @@ public class GridController : MonoBehaviour
 
     /*
      * This function is called when it's time to get rid of all highlighted
-     * tiles.
+     * tiles associated with a single unit.
      */
-    public void unInstantiateMoveRange()
+    public void unInstantiateMoveRange(List<Vector3Int> marked)
     {
-        int listsize = markedTiles.Count;
+        int listsize = marked.Count;
         for (int i = 0; i < listsize; i++) {
-            overlayGrid.SetTile(markedTiles[i], null);
+            markedTiles.Remove(marked[i]);
+            if (!markedTiles.Contains(marked[i])) {
+                overlayGrid.SetTile(marked[i], null);
+            }
         }
+        // markedTiles.Clear();
     }
 }
