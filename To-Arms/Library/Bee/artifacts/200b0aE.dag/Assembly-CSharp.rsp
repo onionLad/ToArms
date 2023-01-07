@@ -344,6 +344,7 @@
 "Assets/Scripts/CursorController.cs"
 "Assets/Scripts/GridController.cs"
 "Assets/Scripts/SkirmishHandler.cs"
+"Assets/Scripts/Unit.cs"
 "Assets/Scripts/UnitController.cs"
 -langversion:8.0
 
