@@ -1,7 +1,7 @@
 /*
  * Unit.cs
  *
- * Purpose: Contains the Unit class, with contains all information about a
+ * Purpose: Contains the Unit class, which contains all information about a
  *          given unit, including its health, combat modifiers, and stats.
  */
 
