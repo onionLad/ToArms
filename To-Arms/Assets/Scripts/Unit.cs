@@ -25,11 +25,13 @@ public class Unit : MonoBehaviour
 
     /*
      * Unit Type Info.
-     * UnitName determines the base stats while modifer alters the base stats
-     * to adjust difficulty.
+     * UnitName determines the base stats, modifer alters the base stats to
+     * adjust difficulty, and team determines which units this unit can
+     * attack.
      */
     public string unitName;
     public float modifier;
+    public string team;
 
     /* Unit Stats. */
     private int maxHealth;
