@@ -30,10 +30,11 @@ public class UnitController : MonoBehaviour
     private GridController gridControl;
 
     /* 
-     * List of coordinates cooresponding to move range tiles associated with
-     * this unit.
+     * Lists of coordinates cooresponding to move range tiles and attack
+     * target tiles associated with this unit.
      */
     private List<Vector3Int> markedTiles = new List<Vector3Int>();
+    private List<Vector3Int> targetTiles = new List<Vector3Int>();
 
     /* Bools. */
     private bool myTurn;
@@ -109,8 +110,10 @@ public class UnitController : MonoBehaviour
         return gameObject.transform.position;
     }
 
-    /* Gets unit's position in relation to theGrid. The function's primary job
-       is to account for grid offset. */
+    /*
+     * Gets unit's position in relation to theGrid. The function's primary job
+     * is to account for grid offset.
+     */
     Vector3Int get_currGridPos()
     {
         int offsetx = -1;
@@ -132,10 +135,14 @@ public class UnitController : MonoBehaviour
 
         if (myTurn) {
             markedTiles.AddRange( gridControl.instantiateMoveRange(gridControl.CursorGridCoords(), 2) );
+            targetTiles.AddRange( gridControl.instantiateTargets(gridControl.CursorGridCoords(), 1) );
         } else {
             Debug.Log("UNINSTANTIATE");
             gridControl.unInstantiateMoveRange(markedTiles);
             markedTiles.Clear();
+
+            gridControl.unInstantiateTargets(targetTiles);
+            targetTiles.Clear();
         }
     }
 

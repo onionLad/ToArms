@@ -30,6 +30,7 @@ public class GridController : MonoBehaviour
     /* These are for displaying movement range. */
     public Tilemap overlayGrid;
     public Tile overlayTile;
+    public Tile targetTile;
 
     /* 
      * Also used for displaying movement range. Gets filled when tiles are
@@ -97,8 +98,7 @@ public class GridController : MonoBehaviour
      */
     public bool hasOverlayTile(Vector3Int pos)
     {
-        // pos = new Vector3Int(pos.x, pos.y, 0);
-        return overlayGrid.GetTile(pos) != null;
+        return overlayGrid.GetTile(pos) == overlayTile;
     }
 
     /* ==================================================================== *\
@@ -143,9 +143,6 @@ public class GridController : MonoBehaviour
 
         /* Obtaining a list of legal moves. */
         List<Vector3Int> coords = get_legalMoves(start, depth);
-        // foreach (Vector3Int c in coords) {
-        //     Debug.Log(c);
-        // }
 
         /* Iterating over that list, highlighting each of the coordinates. */
         int coords_size = coords.Count;
@@ -229,7 +226,7 @@ public class GridController : MonoBehaviour
                 Vector3Int coord = new Vector3Int(start.x + x, start.y + y, 0);
                 // Vector3Int coord = new Vector3Int(start.x + x, start.y + y, start.z);
 
-                if (!isIllegal(coord, marked)) {
+                if (!isIllegalMove(coord, marked)) {
                     // Debug.Log(coord);
                     adjList.Add( coord );
                 }
@@ -243,7 +240,7 @@ public class GridController : MonoBehaviour
      * A move is illegal if the tile is occupied, it's a void tile, or if it's
      * already been marked.
      */
-    bool isIllegal(Vector3Int coord, List<Vector3Int> marked)
+    bool isIllegalMove(Vector3Int coord, List<Vector3Int> marked)
     {
         bool is_occupied = occupiedTiles.Contains(coord);
         bool is_void = battleMap.GetTile(coord) == null;
@@ -266,5 +263,77 @@ public class GridController : MonoBehaviour
             }
         }
         // markedTiles.Clear();
+    }
+
+    /* ==================================================================== *\
+     *  Attack Range Display Functions                                      *
+     *                                                                      *
+     *  These functions display the red overlay tiles which appear when a   *
+     *  player wants to attack a unit.                                      *
+    \* ==================================================================== */
+
+    /*
+     * Function: instantiateTargets()
+     * Description: Highlights all legal attack targets within range of a
+     *              starting postion.
+     * Input:  A position on the terrain grid and an attck range.
+     * Output: Highlights legal targets from the starting point.
+     */
+    public List<Vector3Int> instantiateTargets(Vector3Int start, int depth)
+    {
+        List<Vector3Int> targets = new List<Vector3Int>();
+        Vector3Int coord;
+
+        /* Obtaining list of target tiles. */
+        for (int y = -depth; y <= depth; y++) {
+            for (int x = -depth; x <= depth; x++) {
+
+                coord = new Vector3Int(start.x + x, start.y + y, 0);
+                if (hasTarget(coord) && !((x == 0) && (y == 0))) {
+                    targets.Add(coord);
+                    Debug.Log("Target Acquired");
+                }
+
+            }
+        }
+
+        /* Highlighting stored coordinates. */
+        for (int i = 0; i < targets.Count; i++) {
+            overlayGrid.SetTile(targets[i], targetTile);
+        }
+
+        /* Keeping track of tiles that have been marked. */
+        markedTiles.AddRange(targets);
+
+        return targets;
+    }
+
+    /* If a given coordinate has a Unit gameobject, return true. */
+    bool hasTarget(Vector3Int pos)
+    {
+        Vector3 coord = grid.GetCellCenterWorld(pos);
+        Vector2 coord2D = new Vector2(coord.x, coord.y);
+        Vector2[] list_2D = new Vector2[1];
+
+        /*
+         * This code creates a bubble around pos and checks if the number of
+         * colliders within that bubble exceeds 0.
+         */
+        return Physics2D.OverlapCircle(coord2D, (float)0.1) != null;
+    }
+
+    /*
+     * This function is called when it's time to get rid of all attack target
+     * tiles associated with a single unit.
+     */
+    public void unInstantiateTargets(List<Vector3Int> targets)
+    {
+        int listsize = targets.Count;
+        for (int i = 0; i < listsize; i++) {
+            markedTiles.Remove(targets[i]);
+            if (!markedTiles.Contains(targets[i])) {
+                overlayGrid.SetTile(targets[i], null);
+            }
+        }
     }
 }

@@ -39,7 +39,7 @@ public class SkirmishHandler : MonoBehaviour
     /* On start, initialize class members. */
     void Start()
     {
-        unitContainer = GameObject.Find("units");
+        unitContainer = GameObject.Find("Units");
     }
 
     // Update is called once per frame

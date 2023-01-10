@@ -1543,6 +1543,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   overlayGrid: {fileID: 1656405194}
   overlayTile: {fileID: 11400000, guid: b53d060584300473393530333c56d6f7, type: 2}
+  targetTile: {fileID: 11400000, guid: cf44ca7efc6c14850bad866b63ac5567, type: 2}
 --- !u!1 &1569321243
 GameObject:
   m_ObjectHideFlags: 0
@@ -1553,7 +1554,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1569321244}
   m_Layer: 0
-  m_Name: units
+  m_Name: Units
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
