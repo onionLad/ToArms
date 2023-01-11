@@ -25,9 +25,10 @@ public class UnitController : MonoBehaviour
      *  MEMBER VARIABLES                                                    *
     \* ==================================================================== */
 
-    /* Objects. */
+    /* Objects & Scripts. */
     private Grid theGrid;
     private GridController gridControl;
+    private SkirmishHandler skirmish;
 
     /* 
      * Lists of coordinates cooresponding to move range tiles and attack
@@ -38,6 +39,11 @@ public class UnitController : MonoBehaviour
 
     /* Bools. */
     private bool myTurn;
+    private bool hasMoved;
+    private bool hasAttacked;
+
+    /* Poor Solution. */
+    private int tilesNotUpdated;
 
     /* ==================================================================== *\
      *                                                                      *
@@ -45,7 +51,7 @@ public class UnitController : MonoBehaviour
      *                                                                      *
     \* ==================================================================== */
 
-    /* 
+    /*
      * On start, initialize member variables, center the unit to the nearest
      * tile, and add its position to the GridController's list of occupied
      * tiles.
@@ -54,11 +60,17 @@ public class UnitController : MonoBehaviour
     {
         theGrid = GameObject.Find("Grid").GetComponent<Grid>();
         gridControl = GameObject.Find("Grid").GetComponent<GridController>();
-        myTurn = false;
+        skirmish = GameObject.Find("GameHandler").GetComponent<SkirmishHandler>();
 
-        gameObject.transform.position = getCellPos();
+        gameObject.transform.position = get_CellInWorldPos();
 
         gridControl.addOccupiedTile(get_currGridPos());
+
+        myTurn = false;
+        hasMoved = false;
+        hasAttacked = false;
+
+        tilesNotUpdated = 0;
     }
 
     /* Every frame, check for user inputs. */
@@ -75,51 +87,46 @@ public class UnitController : MonoBehaviour
                 Reloc( GetCursorPosition(), get_currGridPos() );
             } 
 
-            /* Temporary code.
-             * If the move isn't legal, end the unit's turn.
-             */
-            else if (myTurn && (GetCursorPosition() != get_currGridPos())) {
-                toggleTurn();
-            }
+            // /* Temporary code.
+            //  * If the move isn't legal, end the unit's turn.
+            //  */
+            // else if (myTurn && (GetCursorPosition() != get_currGridPos())) {
+            //     toggleTurn();
+            // }
+        }
+
+        /* Temp Solution: Update move & target tiles a few times. */
+        if (myTurn && (tilesNotUpdated > 0)) {
+            disableTurn();
+            enableTurn();
+            tilesNotUpdated--;
         }
     }
 
-    /* Unit clicked --> Toggle turn status. */
-    void OnMouseDown()
-    {
-        toggleTurn();
-    }
+    // /* Unit clicked --> Toggle turn status. */
+    // void OnMouseDown()
+    // {
+    //     toggleTurn();
+    // }
 
     /* ==================================================================== *\
-     *  Helper Functions                                                    *
+     *  Coordinate Getter Functions                                         *
     \* ==================================================================== */
 
-    /*
-     * Returns the world position of the cell that the unit should center
-     * itself on.
-     */
-    Vector3 getCellPos()
+    /* Gets the WORLD position of the UNIT in relation to the GRID. */
+    Vector3 get_CellInWorldPos()
     {
         Vector3 coords = theGrid.GetCellCenterWorld(theGrid.WorldToCell(transform.position));
         return new Vector3(coords.x, (float)(coords.y - 0.25), coords.z);
     }
 
-    /* Obtains character's current transform position. */
-    Vector3 get_currPos()
-    {
-        return gameObject.transform.position;
-    }
-
-    /*
-     * Gets unit's position in relation to theGrid. The function's primary job
-     * is to account for grid offset.
-     */
+    /* Gets the GRID position of the UNIT. */
     Vector3Int get_currGridPos()
     {
         int offsetx = -1;
         int offsety = -1;
 
-        Vector3Int gridpos = theGrid.WorldToCell(get_currPos());
+        Vector3Int gridpos = theGrid.WorldToCell(gameObject.transform.position);
         int x_coord = gridpos.x + offsetx;
         int y_coord = gridpos.y + offsety;
 
@@ -128,16 +135,29 @@ public class UnitController : MonoBehaviour
         return offsetCoord;
     }
 
+    /* Gets the GRID positon of the CURSOR. */
+    Vector3Int GetCursorPosition()
+    {
+        return gridControl.CursorGridCoords();
+    }
+
+    /* ==================================================================== *\
+     *  Turn Management Functions                                           *
+    \* ==================================================================== */
+
     /* Switches myTurn on/off. */
     void toggleTurn()
     {
         myTurn = !myTurn;
 
         if (myTurn) {
+            // Debug.Log("INSTANTIATE");
             markedTiles.AddRange( gridControl.instantiateMoveRange(gridControl.CursorGridCoords(), 2) );
             targetTiles.AddRange( gridControl.instantiateTargets(gridControl.CursorGridCoords(), 1) );
+
+            tilesNotUpdated = 30;
         } else {
-            Debug.Log("UNINSTANTIATE");
+            // Debug.Log("UNINSTANTIATE");
             gridControl.unInstantiateMoveRange(markedTiles);
             markedTiles.Clear();
 
@@ -146,17 +166,53 @@ public class UnitController : MonoBehaviour
         }
     }
 
+    /* Switches myTurn to true and updates display tiles. */
+    public void enableTurn()
+    {
+        myTurn = true;
+
+        markedTiles.AddRange( gridControl.instantiateMoveRange(get_currGridPos(), 2) );
+        targetTiles.AddRange( gridControl.instantiateTargets(get_currGridPos(), 1) );
+
+        tilesNotUpdated = 30;
+    }
+
+    /* Switches myTurn to false and updates display tiles. */
+    public void disableTurn()
+    {
+        myTurn = false;
+
+        gridControl.unInstantiateMoveRange(markedTiles);
+        markedTiles.Clear();
+
+        gridControl.unInstantiateTargets(targetTiles);
+        targetTiles.Clear();
+    }
+
+    /* Returns this unit's turn status. Used by other scripts. */
+    public bool isTurn()
+    {
+        return myTurn;
+    }
+
+    /*
+     * Returns true if the unit is ready to move. That is, it has exhausted
+     * all position actions it could have taken on the current turn.
+     */
+    public bool turnOver()
+    {
+        return hasMoved && hasAttacked;
+    }
+
+    /* ==================================================================== *\
+     *  Movement Helper Functions                                           *
+    \* ==================================================================== */
+
     /* Function that checks if a given move is legal or not. Basically, does it
        fall within the highlighted zone? */
     bool isLegalMove()
     {
         return gridControl.hasOverlayTile(GetCursorPosition());
-    }
-
-    /* Obtains grid coordinates of curent cursor position. */
-    Vector3Int GetCursorPosition()
-    {
-        return gridControl.CursorGridCoords();
     }
 
     /* Moves unit to clicked tile. */
@@ -181,6 +237,8 @@ public class UnitController : MonoBehaviour
             gameObject.transform.position += offset;
 
             toggleTurn();
+
+            skirmish.incrementTurn();
         }
     }
 }

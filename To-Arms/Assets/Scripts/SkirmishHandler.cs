@@ -29,6 +29,7 @@ public class SkirmishHandler : MonoBehaviour
 
     /* Turn tracker. */
     private int currTurn;
+    private int maxTurn;
 
     /* ==================================================================== *\
      *                                                                      *
@@ -40,11 +41,47 @@ public class SkirmishHandler : MonoBehaviour
     void Start()
     {
         unitContainer = GameObject.Find("Units");
+        GameObject[] unitArray = GameObject.FindGameObjectsWithTag("unit");
+
+        /*
+         * At some point, we will want a better system for determining turn
+         * order.
+         */
+        for (int i = 0; i < unitArray.Length; i++) {
+            units.Add(unitArray[i]);
+            // Debug.Log("Unit Added");
+        }
+        // Debug.Log(units.Count);
+
+        currTurn = 0;
+        maxTurn = units.Count;
     }
 
-    // Update is called once per frame
+    /* Every frame, update display tiles according to current turn. */
     void Update()
     {
-        
+        /* Updating display tiles. */
+        UnitController currUnitController = units[currTurn].GetComponent<UnitController>();
+        if (!currUnitController.isTurn()) {
+            currUnitController.enableTurn();
+            for (int i = 0; i < maxTurn; i++) {
+                if (i != currTurn) {
+                    units[i].GetComponent<UnitController>().disableTurn();
+                }
+            }
+        }
+    }
+
+    /* ==================================================================== *\
+     *  Helper Functions                                                    *
+    \* ==================================================================== */
+
+    /* Moves currTurn to the next unit in the turn order. */
+    public void incrementTurn()
+    {
+        currTurn++;
+        if (currTurn >= maxTurn) {
+            currTurn = 0;
+        }
     }
 }

@@ -139,7 +139,7 @@ public class GridController : MonoBehaviour
      */
     public List<Vector3Int> instantiateMoveRange(Vector3Int start, int depth)
     {
-        Debug.Log("Instantiating from: " + start);
+        // Debug.Log("Instantiating from: " + start);
 
         /* Obtaining a list of legal moves. */
         List<Vector3Int> coords = get_legalMoves(start, depth);
@@ -291,7 +291,7 @@ public class GridController : MonoBehaviour
                 coord = new Vector3Int(start.x + x, start.y + y, 0);
                 if (hasTarget(coord) && !((x == 0) && (y == 0))) {
                     targets.Add(coord);
-                    Debug.Log("Target Acquired");
+                    // Debug.Log("Target Acquired");
                 }
 
             }
