@@ -101,6 +101,12 @@ public class GridController : MonoBehaviour
         return overlayGrid.GetTile(pos) == overlayTile;
     }
 
+    /* Determines if a given posiiton on the grid has a target tile. */
+    public bool hasTargetTile(Vector3Int pos)
+    {
+        return overlayGrid.GetTile(pos) == targetTile;
+    }
+
     /* ==================================================================== *\
      *  Public Setter Functions                                             *
     \* ==================================================================== */
@@ -309,15 +315,15 @@ public class GridController : MonoBehaviour
     }
 
     /* If a given coordinate has a Unit gameobject, return true. */
-    bool hasTarget(Vector3Int pos)
+    public bool hasTarget(Vector3Int pos)
     {
         Vector3 coord = grid.GetCellCenterWorld(pos);
         Vector2 coord2D = new Vector2(coord.x, coord.y);
         Vector2[] list_2D = new Vector2[1];
 
         /*
-         * This code creates a bubble around pos and checks if the number of
-         * colliders within that bubble exceeds 0.
+         * This code creates a bubble around pos and checks if there's a
+         * collider overlapping the bubble.
          */
         return Physics2D.OverlapCircle(coord2D, (float)0.1) != null;
     }

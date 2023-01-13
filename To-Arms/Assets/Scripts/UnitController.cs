@@ -43,7 +43,7 @@ public class UnitController : MonoBehaviour
     private bool hasAttacked;
 
     /* Poor Solution. */
-    private int tilesNotUpdated;
+    private int tileUpdateCounter;
 
     /* ==================================================================== *\
      *                                                                      *
@@ -64,13 +64,13 @@ public class UnitController : MonoBehaviour
 
         gameObject.transform.position = get_CellInWorldPos();
 
-        gridControl.addOccupiedTile(get_currGridPos());
+        gridControl.addOccupiedTile(get_UnitGridPos());
 
         myTurn = false;
         hasMoved = false;
         hasAttacked = false;
 
-        tilesNotUpdated = 0;
+        tileUpdateCounter = 0;
     }
 
     /* Every frame, check for user inputs. */
@@ -84,22 +84,32 @@ public class UnitController : MonoBehaviour
              * relocate the unit.
              */
             if (myTurn && isLegalMove()) {
-                Reloc( GetCursorPosition(), get_currGridPos() );
+                Reloc( get_CursorPosition(), get_UnitGridPos() );
             } 
 
             // /* Temporary code.
             //  * If the move isn't legal, end the unit's turn.
             //  */
-            // else if (myTurn && (GetCursorPosition() != get_currGridPos())) {
+            // else if (myTurn && (get_CursorPosition() != get_UnitGridPos())) {
             //     toggleTurn();
             // }
+
+            else if (myTurn && isLegalTarget() && !hasAttacked) {
+                // Debug.Log("BAM!");
+                Attack( get_CursorPosition() );
+                hasAttacked = true;
+                // Debug.Log("Unit Has Attacked: " + hasAttacked);
+            }
         }
 
         /* Temp Solution: Update move & target tiles a few times. */
-        if (myTurn && (tilesNotUpdated > 0)) {
+        if (myTurn && (tileUpdateCounter > 0)) {
+            // toggleTurn();
+            // toggleTurn();
+            // Debug.Log("infinite?");
             disableTurn();
             enableTurn();
-            tilesNotUpdated--;
+            tileUpdateCounter--;
         }
     }
 
@@ -121,7 +131,7 @@ public class UnitController : MonoBehaviour
     }
 
     /* Gets the GRID position of the UNIT. */
-    Vector3Int get_currGridPos()
+    Vector3Int get_UnitGridPos()
     {
         int offsetx = -1;
         int offsety = -1;
@@ -136,7 +146,7 @@ public class UnitController : MonoBehaviour
     }
 
     /* Gets the GRID positon of the CURSOR. */
-    Vector3Int GetCursorPosition()
+    Vector3Int get_CursorPosition()
     {
         return gridControl.CursorGridCoords();
     }
@@ -155,7 +165,7 @@ public class UnitController : MonoBehaviour
             markedTiles.AddRange( gridControl.instantiateMoveRange(gridControl.CursorGridCoords(), 2) );
             targetTiles.AddRange( gridControl.instantiateTargets(gridControl.CursorGridCoords(), 1) );
 
-            tilesNotUpdated = 30;
+            // tileUpdateCounter = 30;
         } else {
             // Debug.Log("UNINSTANTIATE");
             gridControl.unInstantiateMoveRange(markedTiles);
@@ -171,16 +181,17 @@ public class UnitController : MonoBehaviour
     {
         myTurn = true;
 
-        markedTiles.AddRange( gridControl.instantiateMoveRange(get_currGridPos(), 2) );
-        targetTiles.AddRange( gridControl.instantiateTargets(get_currGridPos(), 1) );
+        markedTiles.AddRange( gridControl.instantiateMoveRange(get_UnitGridPos(), 2) );
+        targetTiles.AddRange( gridControl.instantiateTargets(get_UnitGridPos(), 1) );
 
-        tilesNotUpdated = 30;
+        // tileUpdateCounter = 30;
     }
 
     /* Switches myTurn to false and updates display tiles. */
     public void disableTurn()
     {
         myTurn = false;
+        // hasAttacked = false;
 
         gridControl.unInstantiateMoveRange(markedTiles);
         markedTiles.Clear();
@@ -195,11 +206,17 @@ public class UnitController : MonoBehaviour
         return myTurn;
     }
 
+    /* Resets the updateCounter.  */
+    public void setUpdateCounter()
+    {
+        tileUpdateCounter = 30;
+    }
+
     /*
      * Returns true if the unit is ready to move. That is, it has exhausted
      * all position actions it could have taken on the current turn.
      */
-    public bool turnOver()
+    public bool turnIsOver()
     {
         return hasMoved && hasAttacked;
     }
@@ -212,7 +229,7 @@ public class UnitController : MonoBehaviour
        fall within the highlighted zone? */
     bool isLegalMove()
     {
-        return gridControl.hasOverlayTile(GetCursorPosition());
+        return gridControl.hasOverlayTile(get_CursorPosition());
     }
 
     /* Moves unit to clicked tile. */
@@ -240,5 +257,31 @@ public class UnitController : MonoBehaviour
 
             skirmish.incrementTurn();
         }
+    }
+
+    /* ==================================================================== *\
+     *  Combat Helper Functions                                             *
+    \* ==================================================================== */
+
+    /* Function that checks if a given target is legal. */
+    bool isLegalTarget()
+    {
+        return gridControl.hasTargetTile(get_CursorPosition());
+    }
+
+    /*
+     * Calculate damage between units.
+     */
+    void Attack(Vector3Int targetPos)
+    {
+        Vector2 targetCoord = new Vector2(targetPos.x, targetPos.y);
+
+        Collider2D defenderCollider = Physics2D.OverlapCircle(targetCoord, (float)0.5);
+        // Unit defender = defenderCollider.gameObject.GetComponent<Unit>();
+
+        // defender.CalculateDamage(gameObject.GetComponent<Unit>());
+        // defenderCollider.gameObject.GetComponent<Unit>().CalculateDamage(gameObject.GetComponent<Unit>());
+
+        Debug.Log("Collider Found: " + (defenderCollider != null));
     }
 }

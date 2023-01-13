@@ -69,6 +69,10 @@ public class Unit : MonoBehaviour
         }
     }
 
+    /* ==================================================================== *\
+     *  Helper Functions                                                    *
+    \* ==================================================================== */
+
     /* Debugging function. Spits out unit stats to console. */
     void DisplayStats()
     {
@@ -82,5 +86,15 @@ public class Unit : MonoBehaviour
             "Damage: " + baseDamage + "\n" +
             "Weapon: " + weapon
         );
+    }
+
+    /* ==================================================================== *\
+     *  Combat Helper Functions                                             *
+    \* ==================================================================== */
+
+    /* Accepts an enemy unit and calculates damage. */
+    public void CalculateDamage(Unit attacker)
+    {
+        Debug.Log(attacker.gameObject.name);
     }
 }

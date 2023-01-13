@@ -63,6 +63,7 @@ public class SkirmishHandler : MonoBehaviour
         /* Updating display tiles. */
         UnitController currUnitController = units[currTurn].GetComponent<UnitController>();
         if (!currUnitController.isTurn()) {
+            // Debug.Log("uhoh");
             currUnitController.enableTurn();
             for (int i = 0; i < maxTurn; i++) {
                 if (i != currTurn) {
@@ -83,5 +84,7 @@ public class SkirmishHandler : MonoBehaviour
         if (currTurn >= maxTurn) {
             currTurn = 0;
         }
+
+        units[currTurn].GetComponent<UnitController>().setUpdateCounter();
     }
 }
