@@ -84,19 +84,19 @@ public class UnitController : MonoBehaviour
              * relocate the unit.
              */
             if (myTurn && isLegalMove()) {
-                Reloc( get_CursorPosition(), get_UnitGridPos() );
+                Reloc( get_CursorCellPosition(), get_UnitGridPos() );
             } 
 
             // /* Temporary code.
             //  * If the move isn't legal, end the unit's turn.
             //  */
-            // else if (myTurn && (get_CursorPosition() != get_UnitGridPos())) {
+            // else if (myTurn && (get_CursorCellPosition() != get_UnitGridPos())) {
             //     toggleTurn();
             // }
 
             else if (myTurn && isLegalTarget() && !hasAttacked) {
                 // Debug.Log("BAM!");
-                Attack( get_CursorPosition() );
+                Attack( get_CursorWorldPos() );
                 hasAttacked = true;
                 // Debug.Log("Unit Has Attacked: " + hasAttacked);
             }
@@ -123,7 +123,7 @@ public class UnitController : MonoBehaviour
      *  Coordinate Getter Functions                                         *
     \* ==================================================================== */
 
-    /* Gets the WORLD position of the UNIT in relation to the GRID. */
+    /* Gets the WORLD position of the UNIT snapped to the GRID. */
     Vector3 get_CellInWorldPos()
     {
         Vector3 coords = theGrid.GetCellCenterWorld(theGrid.WorldToCell(transform.position));
@@ -145,8 +145,15 @@ public class UnitController : MonoBehaviour
         return offsetCoord;
     }
 
+    /* Gets the WORLD position of the CURSOR snapped to the GRID. */
+    Vector3 get_CursorWorldPos()
+    {
+        Vector3 coords = theGrid.GetCellCenterWorld(get_CursorCellPosition());
+        return new Vector3(coords.x, (float)(coords.y - 0.25), coords.z);
+    }
+
     /* Gets the GRID positon of the CURSOR. */
-    Vector3Int get_CursorPosition()
+    Vector3Int get_CursorCellPosition()
     {
         return gridControl.CursorGridCoords();
     }
@@ -229,7 +236,7 @@ public class UnitController : MonoBehaviour
        fall within the highlighted zone? */
     bool isLegalMove()
     {
-        return gridControl.hasOverlayTile(get_CursorPosition());
+        return gridControl.hasOverlayTile(get_CursorCellPosition());
     }
 
     /* Moves unit to clicked tile. */
@@ -266,22 +273,30 @@ public class UnitController : MonoBehaviour
     /* Function that checks if a given target is legal. */
     bool isLegalTarget()
     {
-        return gridControl.hasTargetTile(get_CursorPosition());
+        return gridControl.hasTargetTile(get_CursorCellPosition());
+    }
+
+    /* Returns the unit that the player is point at with their cursor. */
+    Unit get_Unit(Vector2 pos)
+    {
+        Collider2D defenderCollider = Physics2D.OverlapCircle(pos, (float)0.1);
+        return defenderCollider.gameObject.GetComponent<Unit>();
     }
 
     /*
      * Calculate damage between units.
      */
-    void Attack(Vector3Int targetPos)
+    void Attack(Vector3 targetPos)
     {
         Vector2 targetCoord = new Vector2(targetPos.x, targetPos.y);
 
-        Collider2D defenderCollider = Physics2D.OverlapCircle(targetCoord, (float)0.5);
+        // Collider2D defenderCollider = Physics2D.OverlapCircle(targetCoord, (float)0.1);
         // Unit defender = defenderCollider.gameObject.GetComponent<Unit>();
+        Unit defender = get_Unit(targetCoord);
 
-        // defender.CalculateDamage(gameObject.GetComponent<Unit>());
+        defender.CalculateDamage(gameObject.GetComponent<Unit>());
         // defenderCollider.gameObject.GetComponent<Unit>().CalculateDamage(gameObject.GetComponent<Unit>());
 
-        Debug.Log("Collider Found: " + (defenderCollider != null));
+        // Debug.Log("Collider Found: " + (defenderCollider != null));
     }
 }

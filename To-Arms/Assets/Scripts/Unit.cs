@@ -60,12 +60,24 @@ public class Unit : MonoBehaviour
                 currHealth = maxHealth;
                 moveRange = 2;
 
-                strength = 5;
-                armor = 5;
-                baseDamage = 5;
+                strength = 2;
+                armor = 2;
+                baseDamage = 2;
 
                 weapon = "None";
                 break;
+        }
+    }
+
+    /*
+     * Every frame, destroy the Unit's gameobject if it doesn't have any
+     * health left.
+     */
+    void Update()
+    {
+        if (currHealth <= 0) {
+            Destroy(gameObject);
+            /* Update SkirmishHandler */
         }
     }
 
@@ -92,9 +104,29 @@ public class Unit : MonoBehaviour
      *  Combat Helper Functions                                             *
     \* ==================================================================== */
 
-    /* Accepts an enemy unit and calculates damage. */
+    /*
+     * Accepts an enemy unit, calculates damage, then deals damage. We may
+     * want to break this function into a damage calculator and a seperate
+     * damage dealer.
+     */
     public void CalculateDamage(Unit attacker)
     {
-        Debug.Log(attacker.gameObject.name);
+        Debug.Log(attacker.gameObject.name + " attacked " + gameObject.name);
+
+        int attackForce = (int)(attacker.strength * attacker.baseDamage * attacker.modifier);
+        int defendForce = (int)(strength * armor * modifier);
+
+        int totalDamage = attackForce + defendForce;
+
+        int attackDamage = (int)(((float)attackForce / totalDamage) * attacker.strength * 5);
+
+        currHealth -= attackDamage;
+
+        // Debug.Log("Attack Force: " + attackForce + "\n" +
+        //             "Defend Force: " + defendForce + "\n" +
+        //             "Total Damage: " + totalDamage + "\n" +
+        //             "Attack Damage: " + attackDamage);
+
+        Debug.Log(gameObject.name + " now has " + currHealth + " HP");
     }
 }
