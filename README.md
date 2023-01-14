@@ -1,5 +1,10 @@
 # To Arms!
 A 2D medieval strategy RPG set in the fantasy world of Elduin, inspired by Fire Emblem and Mount & Blade.
 
-## Progress
-As of right now, the game allows the player to move units around on a grid field. Units cannot move into each other's spaces. I intend on implementing a feature that allows the player to only move one unit at a time. I'm currently working on the combat system.
+## Status
+
+### Current Status
+As of right now, the game is able to form a turn order and allows the player to move units on their turn. Additionally, units can now attack each other.
+
+### In Progress
+As of right now, I am working on a way for the game to display unit information during a unit's turn.
