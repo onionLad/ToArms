@@ -279,7 +279,7 @@ public class UnitController : MonoBehaviour
     /* Returns the unit that the player is point at with their cursor. */
     Unit get_Unit(Vector2 pos)
     {
-        Collider2D defenderCollider = Physics2D.OverlapCircle(pos, (float)0.1);
+        Collider2D defenderCollider = Physics2D.OverlapCircle(pos, (float)0.01);
         return defenderCollider.gameObject.GetComponent<Unit>();
     }
 

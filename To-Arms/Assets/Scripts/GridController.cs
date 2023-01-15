@@ -325,7 +325,7 @@ public class GridController : MonoBehaviour
          * This code creates a bubble around pos and checks if there's a
          * collider overlapping the bubble.
          */
-        return Physics2D.OverlapCircle(coord2D, (float)0.1) != null;
+        return Physics2D.OverlapCircle(coord2D, (float)0.01) != null;
     }
 
     /*
