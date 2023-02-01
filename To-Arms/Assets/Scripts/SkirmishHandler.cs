@@ -54,7 +54,6 @@ public class SkirmishHandler : MonoBehaviour
         // Debug.Log(units.Count);
 
         currTurn = 0;
-        maxTurn = units.Count;
     }
 
     /* Every frame, update display tiles according to current turn. */
@@ -65,7 +64,7 @@ public class SkirmishHandler : MonoBehaviour
         if (!currUnitController.isTurn()) {
             // Debug.Log("uhoh");
             currUnitController.enableTurn();
-            for (int i = 0; i < maxTurn; i++) {
+            for (int i = 0; i < units.Count; i++) {
                 if (i != currTurn) {
                     units[i].GetComponent<UnitController>().disableTurn();
                 }
@@ -81,10 +80,16 @@ public class SkirmishHandler : MonoBehaviour
     public void incrementTurn()
     {
         currTurn++;
-        if (currTurn >= maxTurn) {
+        if (currTurn >= units.Count) {
             currTurn = 0;
         }
 
         units[currTurn].GetComponent<UnitController>().setUpdateCounter();
+    }
+
+    /* Removes a unit from the unit array. Gets called when a unit dies. */
+    public void Units_rem(GameObject unit)
+    {
+        units.Remove(unit);
     }
 }

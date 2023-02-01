@@ -98,6 +98,7 @@ public class UnitController : MonoBehaviour
                 // Debug.Log("BAM!");
                 Attack( get_CursorWorldPos() );
                 hasAttacked = true;
+                tileUpdateCounter = 30;
                 // Debug.Log("Unit Has Attacked: " + hasAttacked);
             }
         }
@@ -187,6 +188,7 @@ public class UnitController : MonoBehaviour
     public void enableTurn()
     {
         myTurn = true;
+        hasAttacked = false;
 
         markedTiles.AddRange( gridControl.instantiateMoveRange(get_UnitGridPos(), 2) );
         targetTiles.AddRange( gridControl.instantiateTargets(get_UnitGridPos(), 1) );
@@ -216,7 +218,7 @@ public class UnitController : MonoBehaviour
     /* Resets the updateCounter.  */
     public void setUpdateCounter()
     {
-        tileUpdateCounter = 30;
+        tileUpdateCounter = 10;
     }
 
     /*

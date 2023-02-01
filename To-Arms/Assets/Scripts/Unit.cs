@@ -23,6 +23,8 @@ public class Unit : MonoBehaviour
      *  MEMBER VARIABLES                                                    *
     \* ==================================================================== */
 
+    private SkirmishHandler skirmish;
+
     /*
      * Unit Type Info.
      * UnitName determines the base stats, modifer alters the base stats to
@@ -53,6 +55,8 @@ public class Unit : MonoBehaviour
     /* On start, initialize member variables. */
     void Start()
     {
+        skirmish = GameObject.Find("GameHandler").GetComponent<SkirmishHandler>();
+
         switch (unitName)
         {
             default:
@@ -76,8 +80,11 @@ public class Unit : MonoBehaviour
     void Update()
     {
         if (currHealth <= 0) {
+            /* Updating SkirmishHandler */
+            skirmish.Units_rem(gameObject);
+
+            /* Destroying Unit's GameObject */
             Destroy(gameObject);
-            /* Update SkirmishHandler */
         }
     }
 
